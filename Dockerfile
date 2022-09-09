@@ -1,14 +1,18 @@
-FROM alpine as downloader
+FROM alpine:latest as downloader
 
-ENV KAFKA_TARBALL=https://www-eu.apache.org/dist/kafka/2.4.0/kafka_2.11-2.4.0.tgz
-#Better to keep this on a separate layer :D
+# See https://kafka.apache.org/downloads for available Kafka versions and the
+# Scala versions with which they are built.
+ENV KAFKA_VERSION=3.2.1
+ENV KAFKA_SCALA_VERSION=2.13
+ENV KAFKA_TARBALL=https://downloads.apache.org/kafka/${KAFKA_VERSION}/kafka_${KAFKA_SCALA_VERSION}-${KAFKA_VERSION}.tgz
+
 RUN apk --no-cache add wget
 
 RUN mkdir -p /apps/kafka && \
     wget -O /apps/kafka.tgz ${KAFKA_TARBALL} && \
     tar -xvzf /apps/kafka.tgz -C /apps/kafka --strip-components 1
 
-FROM adoptopenjdk/openjdk8:alpine-slim
+FROM eclipse-temurin:18-jre
 
 ENV KAFKA_USER=kafka \
     KAFKA_GROUP=kafka \
@@ -26,22 +30,25 @@ ENV KAFKA_USER=kafka \
     STATUS_STORAGE_RF=1 \
     OFFSET_FLUSH_INTERVAL=10000
 
-RUN apk update && \
-    apk --no-cache add curl bash supervisor && \
-    mkdir -p ${KAFKA_HOME} && \
+RUN apt-get update && \
+    apt-get install -y supervisor && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
+
+RUN mkdir -p ${KAFKA_HOME} && \
     mkdir -p ${CONNECTOR_DIR} && \
     mkdir -p /var/logs/kafka-logs-1 && \
     addgroup ${KAFKA_GROUP} && \
-    adduser -h ${KAFKA_HOME} -D -s /bin/bash -G ${KAFKA_GROUP} ${KAFKA_USER} && \
+    adduser --home ${KAFKA_HOME} --shell /bin/bash --ingroup ${KAFKA_GROUP} ${KAFKA_USER} && \
     chown -R ${KAFKA_USER}:${KAFKA_GROUP} ${KAFKA_HOME} ${KAFKA_HOME}
 
 COPY --from=downloader /apps/kafka ${KAFKA_HOME}
 
-ADD scripts/start.sh ${KAFKA_HOME}
+COPY start.sh ${KAFKA_HOME}
 
-ADD scripts/kafka.conf /etc/supervisord.conf
+COPY supervisord.conf /etc/supervisord.conf
 
-RUN chown ${KAFKA_USER}:${KAFKA_GROUP} ${KAFKA_HOME}/start.sh && \ 
+RUN chown ${KAFKA_USER}:${KAFKA_GROUP} ${KAFKA_HOME}/start.sh && \
     chown ${KAFKA_USER}:${KAFKA_GROUP} /var/logs/kafka-logs-1  && \
     chown ${KAFKA_USER}:${KAFKA_GROUP} /var/logs  && \
     chmod +x ${KAFKA_HOME}/start.sh
@@ -56,4 +63,4 @@ EXPOSE ${ZOOKEEPER_PORT}
 
 WORKDIR ${KAFKA_HOME}
 
-CMD [ "/bin/bash", "-c",  "./start.sh"]
+CMD ["./start.sh"]

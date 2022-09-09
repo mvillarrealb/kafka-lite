@@ -1,4 +1,4 @@
-# /bin/bash
+#!/bin/bash
 
 cat > ./kafka.properties <<EOL
 broker.id=1

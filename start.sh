@@ -38,4 +38,4 @@ rest.advertised.port=$REST_PORT
 plugin.path=/opt/connectors
 EOL
 
-supervisord --nodaemon --configuration /etc/supervisord.conf
+exec supervisord --nodaemon --configuration /etc/supervisord.conf

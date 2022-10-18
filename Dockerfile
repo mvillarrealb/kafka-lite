@@ -1,18 +1,19 @@
-FROM alpine:latest as downloader
+FROM alpine:latest AS downloader
 
 # See https://kafka.apache.org/downloads for available Kafka versions and the
 # Scala versions with which they are built.
-ENV KAFKA_VERSION=3.2.1
+ENV KAFKA_VERSION=3.3.1
 ENV KAFKA_SCALA_VERSION=2.13
 ENV KAFKA_TARBALL=https://downloads.apache.org/kafka/${KAFKA_VERSION}/kafka_${KAFKA_SCALA_VERSION}-${KAFKA_VERSION}.tgz
 
-RUN apk --no-cache add wget
+RUN apk --no-cache add curl
 
-RUN mkdir -p /apps/kafka && \
-    wget -O /apps/kafka.tgz ${KAFKA_TARBALL} && \
-    tar -xvzf /apps/kafka.tgz -C /apps/kafka --strip-components 1
+RUN mkdir -p /kafka && \
+    curl -sSL ${KAFKA_TARBALL} > /tmp/kafka.tgz && \
+    tar -xvzf /tmp/kafka.tgz -C /kafka --strip-components 1
 
-FROM eclipse-temurin:18-jre
+
+FROM eclipse-temurin:18-jre AS runtime
 
 ENV KAFKA_USER=kafka \
     KAFKA_GROUP=kafka \
@@ -42,7 +43,7 @@ RUN mkdir -p ${KAFKA_HOME} && \
     adduser --home ${KAFKA_HOME} --shell /bin/bash --ingroup ${KAFKA_GROUP} ${KAFKA_USER} && \
     chown -R ${KAFKA_USER}:${KAFKA_GROUP} ${KAFKA_HOME} ${KAFKA_HOME}
 
-COPY --from=downloader /apps/kafka ${KAFKA_HOME}
+COPY --from=downloader /kafka ${KAFKA_HOME}
 
 COPY start.sh ${KAFKA_HOME}
 
@@ -54,11 +55,8 @@ RUN chown ${KAFKA_USER}:${KAFKA_GROUP} ${KAFKA_HOME}/start.sh && \
     chmod +x ${KAFKA_HOME}/start.sh
 
 USER ${KAFKA_USER}
-
 EXPOSE ${REST_PORT}
-
 EXPOSE ${KAFKA_PORT}
-
 EXPOSE ${ZOOKEEPER_PORT}
 
 WORKDIR ${KAFKA_HOME}

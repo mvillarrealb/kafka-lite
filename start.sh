@@ -4,7 +4,7 @@ cat > ./kafka.properties <<EOL
 broker.id=1
 listeners=PLAINTEXT://:$KAFKA_PORT
 zookeeper.connect=localhost:$ZOOKEEPER_PORT
-log.dirs=/var/logs/kafka-logs-1
+log.dirs=$KAFKA_LOGS_DIR
 offsets.topic.replication.factor=1
 transaction.state.log.replication.factor=1
 transaction.state.log.min.isr=1
@@ -16,7 +16,6 @@ clientPort=$ZOOKEEPER_PORT
 maxClientCnxns=0
 admin.enableServer=false
 EOL
-
 
 cat > ./connect-distributed.properties <<EOL
 bootstrap.servers=localhost:$KAFKA_PORT

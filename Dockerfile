@@ -15,9 +15,15 @@ RUN mkdir -p /kafka && \
 
 FROM eclipse-temurin:18-jre AS runtime
 
+RUN apt-get update && \
+    apt-get install -y supervisor && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
+
 ENV KAFKA_USER=kafka \
     KAFKA_GROUP=kafka \
     KAFKA_HOME=/opt/kafka/ \
+    KAFKA_LOGS_DIR=/var/logs/kafka \
     CONNECTOR_DIR=/opt/connectors \
     REST_PORT=8083 \
     KAFKA_PORT=9092 \
@@ -31,28 +37,20 @@ ENV KAFKA_USER=kafka \
     STATUS_STORAGE_RF=1 \
     OFFSET_FLUSH_INTERVAL=10000
 
-RUN apt-get update && \
-    apt-get install -y supervisor && \
-    apt-get autoremove && \
-    rm -rf /var/lib/apt/lists/*
-
 RUN mkdir -p ${KAFKA_HOME} && \
     mkdir -p ${CONNECTOR_DIR} && \
-    mkdir -p /var/logs/kafka-logs-1 && \
+    mkdir -p ${KAFKA_LOGS_DIR} && \
     addgroup ${KAFKA_GROUP} && \
     adduser --home ${KAFKA_HOME} --shell /bin/bash --ingroup ${KAFKA_GROUP} ${KAFKA_USER} && \
-    chown -R ${KAFKA_USER}:${KAFKA_GROUP} ${KAFKA_HOME} ${KAFKA_HOME}
+    chown -R ${KAFKA_USER}:${KAFKA_GROUP} ${KAFKA_HOME} ${KAFKA_HOME} && \
+    chown -R ${KAFKA_USER}:${KAFKA_GROUP} ${KAFKA_LOGS_DIR}
 
 COPY --from=downloader /kafka ${KAFKA_HOME}
 
+RUN chown ${KAFKA_USER}:${KAFKA_GROUP} ${KAFKA_LOGS_DIR}
+
 COPY start.sh ${KAFKA_HOME}
-
 COPY supervisord.conf /etc/supervisord.conf
-
-RUN chown ${KAFKA_USER}:${KAFKA_GROUP} ${KAFKA_HOME}/start.sh && \
-    chown ${KAFKA_USER}:${KAFKA_GROUP} /var/logs/kafka-logs-1  && \
-    chown ${KAFKA_USER}:${KAFKA_GROUP} /var/logs  && \
-    chmod +x ${KAFKA_HOME}/start.sh
 
 USER ${KAFKA_USER}
 EXPOSE ${REST_PORT}

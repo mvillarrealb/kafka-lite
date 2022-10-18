@@ -14,19 +14,21 @@ ARG KAFKA_TARBALL=https://downloads.apache.org/kafka/${KAFKA_VERSION}/kafka_${KA
 ENV KAFKA_USER=kafka \
     KAFKA_GROUP=kafka \
     KAFKA_HOME=/opt/kafka/ \
-    KAFKA_LOGS_DIR=/var/logs/kafka \
-    KAFKA_PORT=9092 \
-    CONNECTOR_DIR=/opt/connectors \
+    KAFKA_LOGS_DIR=/var/logs/kafka
+
+ENV KAFKA_PORT=9092 \
     REST_PORT=8083 \
-    ZOOKEEPER_PORT=2181 \
-    GROUP_ID=connect-cluster \
-    OFFSET_STORAGE_TOPIC=connect-offsets \
+    ZOOKEEPER_PORT=2181
+
+ENV CONFIG_STORAGE_RF=1 \
     CONFIG_STORAGE_TOPIC=connect-configs \
-    STATUS_STORAGE_TOPIC=connect-status \
+    CONNECTOR_DIR=/opt/connectors \
+    GROUP_ID=connect-cluster \
+    OFFSET_FLUSH_INTERVAL=10000 \
     OFFSET_STORAGE_RF=1 \
-    CONFIG_STORAGE_RF=1 \
+    OFFSET_STORAGE_TOPIC=connect-offsets \
     STATUS_STORAGE_RF=1 \
-    OFFSET_FLUSH_INTERVAL=10000
+    STATUS_STORAGE_TOPIC=connect-status
 
 RUN addgroup ${KAFKA_GROUP} && \
     adduser --home ${KAFKA_HOME} --shell /bin/bash --ingroup ${KAFKA_GROUP} ${KAFKA_USER} && \

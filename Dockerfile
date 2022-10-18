@@ -1,10 +1,5 @@
 FROM eclipse-temurin:18-jre AS runtime
 
-RUN apt-get update && \
-    apt-get install -y curl supervisor && \
-    apt-get autoremove && \
-    rm -rf /var/lib/apt/lists/*
-
 # See https://kafka.apache.org/downloads for available Kafka versions and the
 # Scala versions with which they are built.
 ARG KAFKA_VERSION=3.3.1
@@ -30,6 +25,11 @@ ENV CONFIG_STORAGE_RF=1 \
     STATUS_STORAGE_RF=1 \
     STATUS_STORAGE_TOPIC=connect-status
 
+RUN apt-get update && \
+    apt-get install -y curl supervisor && \
+    apt-get autoremove && \
+    rm -rf /var/lib/apt/lists/*
+
 RUN addgroup ${KAFKA_GROUP} && \
     adduser --home ${KAFKA_HOME} --shell /bin/bash --ingroup ${KAFKA_GROUP} ${KAFKA_USER} && \
     mkdir -p ${KAFKA_HOME} && \
@@ -38,16 +38,16 @@ RUN addgroup ${KAFKA_GROUP} && \
     chown -R ${KAFKA_USER}:${KAFKA_GROUP} ${KAFKA_HOME} ${KAFKA_HOME} && \
     chown -R ${KAFKA_USER}:${KAFKA_GROUP} ${KAFKA_LOGS_DIR}
 
-RUN curl -sSL ${KAFKA_TARBALL} > /tmp/kafka.tgz && \
-    tar -xvzf /tmp/kafka.tgz -C /opt/kafka --strip-components 1
+RUN curl -sSL ${KAFKA_TARBALL} | tar -zxv -C ${KAFKA_HOME} --strip-components=1
 
 COPY start-kafka-lite.sh ${KAFKA_HOME}
 COPY supervisord.conf /etc/supervisord.conf
 
 USER ${KAFKA_USER}
+WORKDIR ${KAFKA_HOME}
+
 EXPOSE ${REST_PORT}
 EXPOSE ${KAFKA_PORT}
 EXPOSE ${ZOOKEEPER_PORT}
 
-WORKDIR ${KAFKA_HOME}
 CMD ["./start-kafka-lite.sh"]

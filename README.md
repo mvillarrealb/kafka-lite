@@ -5,6 +5,11 @@ Docker image.
 
 **⚠️ Not for production use!**
 
+## Docker images
+
+Images are available at [mccutchen/kafka-lite] on Docker Hub, tagged with
+specific Kafka versions.
+
 ## Building and releasing
 
 ```sh
@@ -37,3 +42,5 @@ services:
     volumes:
       - /tmp/kafka-data:/var/kafka/logs
 ```
+
+[mccutchen/kafka-lite]: https://hub.docker.com/r/mccutchen/kafka-lite

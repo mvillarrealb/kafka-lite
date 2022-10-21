@@ -11,7 +11,7 @@ ARG KAFKA_TARBALL=https://downloads.apache.org/kafka/${KAFKA_VERSION}/kafka_${SC
 ENV KAFKA_USER=kafka \
     KAFKA_GROUP=kafka \
     KAFKA_HOME=/opt/kafka/ \
-    KAFKA_LOGS_DIR=/var/kafka/logs
+    KAFKA_LOGS_DIR=/var/lib/kafka/data
 
 ENV KAFKA_PORT=9092 \
     ZOOKEEPER_PORT=2181

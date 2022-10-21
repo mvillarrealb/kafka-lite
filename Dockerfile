@@ -1,10 +1,12 @@
 FROM alpine:3.16
 
+# See VERSIONS in this repo for the versions used when building this image.
+#
 # See https://kafka.apache.org/downloads for available Kafka versions and the
 # Scala versions with which they are built.
-ARG KAFKA_VERSION=3.3.1
-ARG KAFKA_SCALA_VERSION=2.13
-ARG KAFKA_TARBALL=https://downloads.apache.org/kafka/${KAFKA_VERSION}/kafka_${KAFKA_SCALA_VERSION}-${KAFKA_VERSION}.tgz
+ARG KAFKA_VERSION
+ARG SCALA_VERSION
+ARG KAFKA_TARBALL=https://downloads.apache.org/kafka/${KAFKA_VERSION}/kafka_${SCALA_VERSION}-${KAFKA_VERSION}.tgz
 
 ENV KAFKA_USER=kafka \
     KAFKA_GROUP=kafka \

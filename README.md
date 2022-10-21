@@ -1,9 +1,9 @@
 # kafka-lite
 
 Single-node kafka cluster for local development and testing in an Alpine-based
-Docker image.
+Docker image, forked from [mvillarrealb/kafka-lite].
 
-**⚠️ Not for production use!**
+**⚠️ Not for production use! ⚠️**
 
 ## Docker images
 
@@ -43,4 +43,14 @@ services:
       - /tmp/kafka-data:/var/kafka/logs
 ```
 
+## Credits
+
+As noted above, this repo is based on [mvillarrealb/kafka-lite]. Differences
+from the upstream image:
+- No kafka-connect
+- Builds on arm64 (e.g. M1 Macs)
+- Uses non-deprecated JVM
+
+
 [mccutchen/kafka-lite]: https://hub.docker.com/r/mccutchen/kafka-lite
+[mvillarrealb/kafka-lite]: https://github.com/mvillarrealb/kafka-lite

@@ -1,4 +1,4 @@
-FROM eclipse-temurin:18-jre AS runtime
+FROM alpine:3.16
 
 # See https://kafka.apache.org/downloads for available Kafka versions and the
 # Scala versions with which they are built.
@@ -25,13 +25,10 @@ ENV CONFIG_STORAGE_RF=1 \
     STATUS_STORAGE_RF=1 \
     STATUS_STORAGE_TOPIC=connect-status
 
-RUN apt-get update && \
-    apt-get install -y curl supervisor && \
-    apt-get autoremove && \
-    rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache bash curl openjdk17-jre-headless supervisor
 
 RUN addgroup ${KAFKA_GROUP} && \
-    adduser --home ${KAFKA_HOME} --shell /bin/bash --ingroup ${KAFKA_GROUP} ${KAFKA_USER} && \
+    adduser -h ${KAFKA_HOME} -D -s /bin/bash -G ${KAFKA_GROUP} ${KAFKA_USER} && \
     mkdir -p ${KAFKA_HOME} && \
     mkdir -p ${CONNECTOR_DIR} && \
     mkdir -p ${KAFKA_LOGS_DIR} && \
